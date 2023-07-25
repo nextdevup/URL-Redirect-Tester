@@ -21,6 +21,7 @@ def get_fixed_url(url, domain):
     parsedURL = urlparse(str(url).strip())
 
     if not domain == "" and not domain.isspace() and domain not in parsedURL.path and parsedURL.netloc == '':
+        domain = get_domain(domain)
         parsedURL = urlparse(urljoin(domain, parsedURL.geturl()))
         parsedURL._replace(netloc=domain)
 
@@ -29,7 +30,7 @@ def get_fixed_url(url, domain):
 
     return parsedURL.geturl()
 
-def get_redirect_from_response(resp, domain):
+def get_redirect_from_response(resp: requests.Response, domain):
     if "Location" in resp.headers:
         redirect = resp.headers["Location"].strip()
         redirect = get_fixed_url(redirect, domain)
