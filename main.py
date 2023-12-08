@@ -10,7 +10,7 @@ from common.extensions import is_empty_string
 from common.gui_components import InputRow
 from common.io_helper import get_file, get_location_for_save
 from common.response_helper import get_domain, get_domain_from_url, get_fixed_url, get_redirect_from_response, is_valid_url
-from common.settings_helper import get_max_redirects, get_max_urls, get_request_headers
+from common.settings_helper import get_http_method, get_max_redirects, get_max_urls, get_request_headers
 
 #Ignore warning regarding skipping cert validation
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -52,7 +52,7 @@ def generate_reports():
         urls.append(url)
 
         while should_continue:
-            resp = requests.head(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+            resp = requests.request(get_http_method(), url, headers=get_request_headers(), allow_redirects=False, verify=False)
 
             if resp.is_redirect or resp.is_permanent_redirect:
                 if is_empty_string(domain):

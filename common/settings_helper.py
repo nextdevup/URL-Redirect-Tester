@@ -2,6 +2,17 @@ import configparser
 
 config = configparser.ConfigParser()
 
+def get_http_method():
+    method = 'GET'
+
+    try:
+        config.read('settings.ini')
+        method = int(config['DEFAULT']['HttpMethod'])
+    except Exception as ex:
+        method = 'GET'
+
+    return method
+
 def get_max_redirects():
     max_redirects = 0
 
