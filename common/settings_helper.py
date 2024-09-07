@@ -35,13 +35,26 @@ def get_request_headers():
 
     return headers
 
+def should_use_head_requests():
+    use_head_request = False
+
+    try:
+        config.read('settings.ini')
+        use_head_request = config.getboolean('DEFAULT', 'UseHEADRequests')
+    except Exception as ex:
+        print(ex)
+        use_head_request = False
+
+    return use_head_request
+
 def should_use_session():
     use_session = True
 
     try:
         config.read('settings.ini')
-        use_session = bool(config['DEFAULT']['PersistSession'])
+        use_session = config.getboolean('DEFAULT', 'PersistSession')
     except Exception as ex:
+        print(ex)
         use_session = True
 
     return use_session

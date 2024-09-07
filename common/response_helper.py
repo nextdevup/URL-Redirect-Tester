@@ -3,7 +3,7 @@ import requests
 from models.Session import Session as Sess
 from urllib.parse import urlparse, urljoin
 from common.extensions import is_empty_string
-from common.settings_helper import get_request_headers, should_use_session
+from common.settings_helper import get_request_headers, should_use_head_requests, should_use_session
 
 def get_domain(domain):
     if not is_empty_string(domain) and not bool(re.match("http", domain, re.I)):
@@ -46,8 +46,16 @@ def is_valid_url(url):
     except:
         return False
     
-def make_request(url, ):
+def make_request(url):
     if should_use_session():
-        return Sess().get_session().head(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+        if should_use_head_requests():
+            return Sess().get_session().head(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+        else:
+            return Sess().get_session().get(url, headers=get_request_headers(), allow_redirects=False, verify=False)
     else:
-        return requests.head(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+        if should_use_head_requests():
+            return requests.head(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+        else:
+            return requests.get(url, headers=get_request_headers(), allow_redirects=False, verify=False)
+        
+import requests
