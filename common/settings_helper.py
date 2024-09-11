@@ -30,10 +30,24 @@ def get_request_headers():
     try:
         config.read('settings.ini')
         headers = {'User-agent': config['DEFAULT']['UserAgent']}
+
+        if not ignore_http_to_https_redirects():
+            headers['Upgrade-Insecure-Requests'] = '1'
     except Exception as ex:
         headers = {}
 
     return headers
+
+def ignore_http_to_https_redirects():
+    ignore = False
+
+    try:
+        config.read('settings.ini')
+        ignore = config.getboolean('DEFAULT', 'IgnoreHttpToHttpsRedirects')
+    except Exception as ex:
+        ignore = False
+
+    return ignore
 
 def should_use_head_requests():
     use_head_request = False
@@ -42,7 +56,6 @@ def should_use_head_requests():
         config.read('settings.ini')
         use_head_request = config.getboolean('DEFAULT', 'UseHEADRequests')
     except Exception as ex:
-        print(ex)
         use_head_request = False
 
     return use_head_request
@@ -54,7 +67,6 @@ def should_use_session():
         config.read('settings.ini')
         use_session = config.getboolean('DEFAULT', 'PersistSession')
     except Exception as ex:
-        print(ex)
         use_session = True
 
     return use_session

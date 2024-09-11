@@ -3,7 +3,7 @@ import requests
 from models.Session import Session as Sess
 from urllib.parse import urlparse, urljoin
 from common.extensions import is_empty_string
-from common.settings_helper import get_request_headers, should_use_head_requests, should_use_session
+from common.settings_helper import get_request_headers, ignore_http_to_https_redirects, should_use_head_requests, should_use_session
 
 def get_domain(domain):
     if not is_empty_string(domain) and not bool(re.match("http", domain, re.I)):
@@ -25,7 +25,8 @@ def get_fixed_url(url, domain):
         parsedURL = urlparse(urljoin(domain, parsedURL.geturl()))
         parsedURL._replace(netloc=domain)
 
-    if parsedURL.scheme == '' or parsedURL.scheme == 'http':
+    # if you want to ignore http to https redirects then just allow the URLs to be auto-corrected here
+    if parsedURL.scheme == '' or (parsedURL.scheme == 'http' and ignore_http_to_https_redirects()):
         parsedURL._replace(scheme='https')
 
     return parsedURL.geturl()

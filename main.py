@@ -9,7 +9,7 @@ from tkinter import messagebox
 from common.extensions import is_empty_string
 from common.gui_components import InputRow
 from common.io_helper import get_file, get_location_for_save
-from common.response_helper import get_domain, get_domain_from_url, get_fixed_url, get_redirect_from_response, is_valid_url, make_request
+from common.response_helper import get_domain, get_domain_from_url, get_fixed_url, get_redirect_from_response, ignore_http_to_https_redirects, is_valid_url, make_request
 from common.settings_helper import get_max_redirects, get_max_urls
 
 #Ignore warning regarding skipping cert validation
@@ -54,7 +54,7 @@ def generate_reports():
         while should_continue:
             resp = make_request(url)
 
-            if resp.is_redirect or resp.is_permanent_redirect:
+            if resp.is_redirect or resp.is_permanent_redirect or resp.status_code in {301, 302, 303, 307, 308}:
                 if is_empty_string(domain):
                     domain = get_domain_from_url(url)
 
@@ -68,6 +68,10 @@ def generate_reports():
                 elif len(urls) > get_max_redirects():
                     url = f'Max Redirects Reached -- {url}'
                     should_continue = False
+            elif ('Strict-Transport-Security' in resp.headers or resp.headers.get('Non-Authoritative-Reason') == 'HSTS') and not ignore_http_to_https_redirects():
+                # Check for HSTS headers because request may not indicate the redirect here but 
+                # the browser would force the redirect to https
+                url = url.replace('http://', 'https://')
             else:
                 url = f'No Redirect -- Status Code: {resp.status_code}'
                 should_continue = False
